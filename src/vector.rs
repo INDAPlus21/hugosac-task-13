@@ -1,28 +1,38 @@
 use std::ops;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Vector3 {
+pub struct Vec3 {
     pub x: f32,
     pub y: f32,
     pub z: f32
 }
 
-impl Vector3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Vector3 {
-        Vector3 {
+impl Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
+        Vec3 {
             x: x,
             y: y,
             z: z
         }
     }
 
+    pub fn x(&self) -> f32 {
+        self.x
+    }
+    pub fn y(&self) -> f32 {
+        self.y
+    }
+    pub fn z(&self) -> f32 {
+        self.z
+    }
+
     pub fn magnitude(&self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn normalize(&self) -> Vector3 {
+    pub fn normalize(&self) -> Vec3 {
         let magnitude: f32 = self.magnitude();
-        Vector3 {
+        Vec3 {
             x: self.x / magnitude,
             y: self.y / magnitude,
             z: self.z / magnitude
@@ -30,28 +40,24 @@ impl Vector3 {
     }
 
     pub fn to_string(&self) -> String {
-        format!("x: {},\ny: {},\nz: {}", self.x, self.y, self.z)
+        format!("[x: {}, y: {}, z: {}]", self.x, self.y, self.z)
     }
 
-    pub fn dot(u: Vector3, v: Vector3) -> f32 {
+    pub fn dot(u: Vec3, v: Vec3) -> f32 {
         u.x * v.x + u.y * v.y + u.z * v.z
     }
 
-    pub fn cross(u: Vector3, v: Vector3) -> Vector3 {
-        Vector3 {
+    pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
+        Vec3 {
             x: u.y * v.z - u.z * v.y,
             y: u.z * v.x - u.x * v.z,
             z: u.x * v.y - u.y * v.x
         }
     }
-
-    
-
-
 }
 
 // Addition for vectors u + v
-impl ops::Add<Vector3> for Vector3 {
+impl ops::Add<Vec3> for Vec3 {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -64,7 +70,7 @@ impl ops::Add<Vector3> for Vector3 {
 }
 
 // Subtraction for vectors u - v
-impl ops::Sub<Vector3> for Vector3 {
+impl ops::Sub<Vec3> for Vec3 {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
@@ -77,11 +83,11 @@ impl ops::Sub<Vector3> for Vector3 {
 }
 
 // Scaling vectors k * v
-impl ops::Mul<Vector3> for f32 {
-    type Output = Vector3;
+impl ops::Mul<Vec3> for f32 {
+    type Output = Vec3;
 
-    fn mul(self, vec: Vector3) -> Vector3 {
-        Vector3 {
+    fn mul(self, vec: Vec3) -> Vec3 {
+        Vec3 {
             x: self * vec.x,
             y: self * vec.y,
             z: self * vec.z
@@ -89,8 +95,34 @@ impl ops::Mul<Vector3> for f32 {
     }
 }
 
+// Multiplying components of vectors
+impl ops::Mul<Vec3> for Vec3 {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z
+        }
+    }
+}
+
+// Dividing vectors  v / k
+impl ops::Div<f32> for Vec3 {
+    type Output = Self;
+
+    fn div(self, divider: f32) -> Self {
+        Self {
+            x: self.x / divider,
+            y: self.y / divider,
+            z: self.z / divider
+        }
+    }
+}
+
 // Negative vector -v
-impl ops::Neg<> for Vector3 {
+impl ops::Neg<> for Vec3 {
     type Output = Self;
 
     fn neg(self) -> Self {
@@ -103,7 +135,7 @@ impl ops::Neg<> for Vector3 {
 }
 
 // Addition assign u += v
-impl ops::AddAssign for Vector3 {
+impl ops::AddAssign for Vec3 {
     fn add_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x + other.x,
@@ -114,7 +146,7 @@ impl ops::AddAssign for Vector3 {
 }   
 
 // Subtraction assign u -= v
-impl ops::SubAssign for Vector3 {
+impl ops::SubAssign for Vec3 {
     fn sub_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x - other.x,
@@ -126,7 +158,7 @@ impl ops::SubAssign for Vector3 {
 
 // Multiplication assign v *= k
 // Vector scaling
-impl ops::MulAssign<f32> for Vector3 {
+impl ops::MulAssign<f32> for Vec3 {
     fn mul_assign(&mut self, scalar: f32) {
         *self = Self {
             x: self.x * scalar,
@@ -137,7 +169,7 @@ impl ops::MulAssign<f32> for Vector3 {
 }
 
 // Division assign v /= k
-impl ops::DivAssign<f32> for Vector3 {
+impl ops::DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, divider: f32) {
         *self = Self {
             x: self.x / divider,
