@@ -1,10 +1,68 @@
+use std::path::Path;
+
 mod vector;
-use vector::Vector3;
+mod sphere;
+mod ray;
+
+use vector::Vec3;
+use sphere::Sphere;
+use ray::Ray;
+
+extern crate image;
+use image::{DynamicImage, GenericImage, Pixel, Rgba};
+
+
+pub fn ray_color(ray: &Ray, sphere: &Sphere) -> Vec3 {
+    if sphere.hit(&ray) {
+        return Vec3::new(255.0, 0.0, 0.0);
+    }
+
+    let unit_direction: Vec3 = ray.direction().normalize();
+    let t: f32 = 0.5 * (unit_direction.y() + 1.0);
+    
+    255.0 * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0))
+}
+
 
 fn main() {
-    let u: Vector3 = Vector3::new(1.0, 0.0, 0.0);
-    let v: Vector3 = Vector3::new(0.0, 1.0, 0.0);
-    println!("{}", Vector3::dot(u,v));
-    u += -u;
-    println!("{}", (u).to_string());
+
+    // Image
+    let aspect_ratio: f32 = 16.0 / 9.0;
+    let width: i16 = 475;
+    let height: i16 = (width as f32 / aspect_ratio) as i16;
+
+    // Camera
+    let viewport_height = 2.0;
+    let viewport_width = aspect_ratio * viewport_height;
+    let focal_length = 1.0;
+
+    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, viewport_height, 0.0);
+    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+
+
+    let sphere: Sphere = Sphere::new(Vec3::new(1.0, 0.0, 1.0), 0.4);
+
+    // Render image
+    let mut output = DynamicImage::new_rgb8(width as u32, height as u32);
+
+    for y in 0..height {
+        for x in 0..width {
+            let u = x as f32 / (&width - 1) as f32;
+            let v = y as f32 / (&height - 1) as f32;
+            let ray: Ray = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical - origin);
+            let pixel_color: Vec3 = ray_color(&ray, &sphere);
+
+            output.put_pixel(x as u32, y as u32, Rgba::from_channels(
+                pixel_color.x() as u8,
+                pixel_color.y() as u8,
+                pixel_color.z() as u8,
+                255)
+            );
+        }
+    }
+
+    DynamicImage::save(&output, &Path::new("image.png"));
+
 }
