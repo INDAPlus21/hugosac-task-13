@@ -29,7 +29,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    pub fn hit(&self, ray: &ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
         // Determines if a ray hits the sphere.
         //(v•v)t^2 + 2t(v•(A-C)) + (A-C)•(A-C) - r^2 = 0
         // Where v is the ray's directional vector, t is the parameter,
@@ -51,7 +51,7 @@ impl Hittable for Sphere {
         let sqrt_disc: f32 = discriminant.sqrt();
 
         // Find the nearest root in range
-        let root: f32 = (-b - sqrt_disc) / (2.0 * a);
+        let mut root: f32 = (-b - sqrt_disc) / (2.0 * a);
         if root < t_min || root > t_max {
             root = (-b + sqrt_disc) / (2.0 * a);
             if root < t_min || root > t_max {
@@ -62,8 +62,9 @@ impl Hittable for Sphere {
         hit_record.t = root;
         hit_record.origin = ray.at(root);
         
-        outward_normal: Vec3 = (hit_record.origin() - self.center()) / radius;
-        hit_record.set_face_normal(ray, outward_normal);
+        let outward_normal: Vec3 = (hit_record.origin - self.center()) / self.radius;
+        hit_record.front_face = Vec3::dot(ray.direction(), outward_normal) < 0.0;
+        hit_record.normal = if hit_record.front_face { outward_normal } else { -outward_normal };
 
         return true;
     }
