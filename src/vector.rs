@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::util::{random_f32, random_f32_in_range};
+
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
     pub x: f32,
@@ -36,6 +38,23 @@ impl Vec3 {
             x: self.x / magnitude,
             y: self.y / magnitude,
             z: self.z / magnitude
+        }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3 {
+            x: random_f32(),
+            y: random_f32(),
+            z: random_f32()
+        }
+    }
+
+    pub fn random_in_range(min: f32, max: f32) -> Vec3 {
+        Vec3 {
+            x: random_f32_in_range(min, max),
+            y: random_f32_in_range(min, max),
+            z: random_f32_in_range(min, max)
+
         }
     }
 
