@@ -4,9 +4,9 @@ use crate::util::{random_f32, random_f32_in_range};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32
+    x: f32,
+    y: f32,
+    z: f32
 }
 
 impl Vec3 {
@@ -54,12 +54,15 @@ impl Vec3 {
             x: random_f32_in_range(min, max),
             y: random_f32_in_range(min, max),
             z: random_f32_in_range(min, max)
-
         }
     }
 
-    pub fn to_string(&self) -> String {
-        format!("[x: {}, y: {}, z: {}]", self.x, self.y, self.z)
+    pub fn random_in_unit_sphere() -> Vec3 {    
+        loop {
+            let p: Vec3 = Vec3::random_in_range(-1.0, 1.0);
+            if Vec3::dot(p, p) >= 1.0 { continue; }
+            return p;
+        }
     }
 
     pub fn dot(u: Vec3, v: Vec3) -> f32 {

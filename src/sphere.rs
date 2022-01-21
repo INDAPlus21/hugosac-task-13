@@ -22,10 +22,6 @@ impl Sphere {
     pub fn radius(&self) -> f32 {
         self.radius
     }
-
-    pub fn to_string(&self) -> String {
-        format!("Center: {}\nRadius: {}", self.center.to_string(), self.radius)
-    }
 }
 
 impl Hittable for Sphere {
