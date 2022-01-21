@@ -4,13 +4,15 @@ mod vector;
 mod sphere;
 mod ray;
 mod hit;
+mod camera;
 mod util;
 
 use vector::Vec3;
 use sphere::Sphere;
 use ray::Ray;
 use hit::{Hittable, HittableList, HitRecord};
-use util::{INFINITY};
+use camera::Camera;
+use util::{INFINITY, ASPECT_RATIO, WIDTH, HEIGHT, VIEWPORT_HEIGHT, VIEWPORT_WIDTH, SAMPLES, random_f32, ORIGIN};
 
 extern crate image;
 use image::{DynamicImage, GenericImage, Pixel, Rgba};
@@ -23,18 +25,15 @@ pub fn ray_color(ray: &Ray, world: &HittableList) -> Vec3 {
     }
 
     let unit_direction: Vec3 = ray.direction().normalize();
-    let t2: f32 = 0.5 * (unit_direction.y() + 1.0);
+    let t: f32 = 0.5 * (unit_direction.y() + 1.0);
     
-    255.0 * ((1.0 - t2) * Vec3::new(1.0, 1.0, 1.0) + t2 * Vec3::new(0.5, 0.7, 1.0))
+    255.0 * ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0))
 }
 
 
 fn main() {
 
     // Image
-    let aspect_ratio: f32 = 16.0 / 9.0;
-    let width: i16 = 475;
-    let height: i16 = (width as f32 / aspect_ratio) as i16;
 
     // World
     let mut list: Vec<Box<dyn Hittable>> = Vec::new();
@@ -43,27 +42,23 @@ fn main() {
     let world: HittableList = HittableList::new(list);
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
-
-
-    // let sphere: Sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.4);
+    let cam: Camera = Camera::new();
 
     // Render image
-    let mut output = DynamicImage::new_rgb8(width as u32, height as u32);
+    let mut output = DynamicImage::new_rgb8(WIDTH as u32, HEIGHT as u32);
 
-    for y in 0..height {
-        for x in 0..width {
-            let u = x as f32 / (width - 1) as f32;
-            let v = (height - y) as f32 / (height - 1) as f32;
-            let ray: Ray = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-            let pixel_color: Vec3 = ray_color(&ray, &world);
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
+            let mut pixel_color: Vec3 = Vec3::new(0.0, 0.0, 0.0);
+            for s in 0..SAMPLES {
+                let u = (x as f32 + random_f32()) / (WIDTH - 1) as f32;
+                let v = ((HEIGHT - y) as f32 + random_f32()) / (HEIGHT - 1) as f32;
+                let ray: Ray = cam.get_ray(u, v);
+                pixel_color += ray_color(&ray, &world);
+            }
+
+            // Divide the color by the number of samples
+            pixel_color /= SAMPLES as f32;
 
             output.put_pixel(x as u32, y as u32, Rgba::from_channels(
                 pixel_color.x() as u8,
@@ -74,6 +69,6 @@ fn main() {
         }
     }
 
-    DynamicImage::save(&output, &Path::new("images/test_sphere.png"));
+    DynamicImage::save(&output, &Path::new("images/test.png"));
 
 }
